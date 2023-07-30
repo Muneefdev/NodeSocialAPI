@@ -1,6 +1,8 @@
 import { validationResult } from "express-validator";
 import bcrypt from "bcryptjs";
 
+import { generateToken } from "../util/jwt.js";
+
 import User from "../models/user.js";
 
 export async function signup(req, res, next) {
@@ -29,6 +31,39 @@ export async function signup(req, res, next) {
 		res.status(201).json({
 			message: "User created.",
 			user: user,
+		});
+	} catch (error) {
+		next(error);
+	}
+}
+
+export async function login(req, res, next) {
+	try {
+		const email = req.body.email;
+		const password = req.body.password;
+
+		const user = await User.findOne({ email: email });
+
+		if (!user) {
+			const error = new Error("User not found. signup to login.");
+			error.statusCode = 401;
+			throw error;
+		}
+
+		const isAuthenticated = await bcrypt.compare(password, user.password);
+
+		if (!isAuthenticated) {
+			const error = new Error("invalid password.");
+			error.statusCode = 401;
+			throw error;
+		}
+
+		const token = generateToken({ email: user.email, userId: user._id });
+
+		res.status(200).json({
+			message: "login succeed, user is authenticated.",
+			token: token,
+			userId: user._id,
 		});
 	} catch (error) {
 		next(error);

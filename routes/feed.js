@@ -8,15 +8,17 @@ import {
 	getPosts,
 	updatePost,
 } from "../controllers/feed.js";
+import { verifyToken } from "../util/jwt.js";
 
 const router = express.Router();
 
 //GET: /feed/posts
-router.get("/posts", getPosts);
+router.get("/posts", verifyToken, getPosts);
 
 //POST: /feed/post
 router.post(
 	"/post",
+	verifyToken,
 	[
 		body("title").trim().isLength({ min: 5 }),
 		body("content").trim().isLength({ min: 5 }),
@@ -25,11 +27,12 @@ router.post(
 );
 
 //GET: /feed/post/:postId
-router.get("/post/:postId", getPost);
+router.get("/post/:postId", verifyToken, getPost);
 
 //PUT: /feed/post/:postId
 router.put(
 	"/post/:postId",
+	verifyToken,
 	[
 		body("title").trim().isLength({ min: 5 }),
 		body("content").trim().isLength({ min: 5 }),
@@ -38,6 +41,6 @@ router.put(
 );
 
 //Delete: /feed/post/:postId
-router.delete("/post/:postId", deletePost);
+router.delete("/post/:postId", verifyToken, deletePost);
 
 export default router;
