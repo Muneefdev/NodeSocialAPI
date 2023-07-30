@@ -1,0 +1,21 @@
+# Node modules
+node_modules/
+
+# Environment files
+.env
+.env.*
+
+# Build and distribution directories
+dist/
+build/
+
+# User-specific and editor files
+.DS_Store
+.vscode/
+*.sublime-*
+*.idea/
+
+# Lock files
+package-lock.json
+
+
