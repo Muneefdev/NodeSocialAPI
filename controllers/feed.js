@@ -1,5 +1,6 @@
 import { validationResult } from "express-validator";
 import Post from "../models/post.js";
+import User from "../models/user.js";
 
 export async function getPosts(req, res, next) {
 	try {
@@ -41,20 +42,22 @@ export async function createPost(req, res, next) {
 		const title = req.body.title;
 		const content = req.body.content;
 		const imageUrl = req.file.path;
+		const creatorId = req.user.userId;
 
 		const post = await Post.create({
 			title: title,
 			imageUrl: imageUrl,
 			content: content,
-			creator: { name: "Muneef" },
+			creator: creatorId,
 		});
 
-		const savedPost = await post.save();
-		console.log(savedPost);
+		const user = await User.findById(req.user.userId);
+		user.posts.push(post._id);
+		await user.save();
 
 		res.status(201).json({
 			message: "Post Created Successfully",
-			post: savedPost,
+			post: post,
 		});
 	} catch (error) {
 		next(error);
@@ -107,9 +110,16 @@ export async function updatePost(req, res, next) {
 		}
 
 		const post = await Post.findById(postId);
+
 		if (!post) {
 			const error = new Error("Post Not Found!");
 			error.statusCode = 404;
+			throw error;
+		}
+		//check user authorization before update
+		if (post.creator.toString() !== req.user.userId) {
+			const error = new Error("Not authorized.");
+			error.statusCode = 403;
 			throw error;
 		}
 		if (post.imageUrl !== updatedImageUrl) {
@@ -142,14 +152,20 @@ export async function deletePost(req, res, next) {
 			throw error;
 		}
 
-		// if (!post.user._id !== user._id) {
-		// 	const error = new Error("Post Not Found!");
-		// 	error.statusCode = 422;
-		// 	throw error;
-		// }
+		//check user authorization before delete
+		if (post.creator.toString() !== req.user.userId) {
+			const error = new Error("Not authorized.");
+			error.statusCode = 403;
+			throw error;
+		}
 
 		post.clearImage();
-		await post.deleteOne();
+		await Post.deleteOne({_id: postId});
+
+		// delete the [id] of the deleted post from user posts array
+		const user = await User.findById(req.user.userId);
+		await user.posts.pull(postId);
+		await user.save();
 
 		res.status(200).json({
 			message: "Post deleted successfully",

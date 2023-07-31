@@ -8,7 +8,7 @@ export function generateToken(payload) {
 }
 
 // Middleware to verify the JWT token from the request headers
-export function verifyToken(req, res, next) {
+export function isAuthenticated(req, res, next) {
 	const token = req.headers.authorization;
 
 	if (!token || !token.startsWith("Bearer ")) {
@@ -21,8 +21,8 @@ export function verifyToken(req, res, next) {
 	const secretKey = process.env.SECRET_KEY;
 
 	try {
-      const decodedToken = jwt.verify(tokenValue, secretKey);
-      
+		const decodedToken = jwt.verify(tokenValue, secretKey);
+
 		if (!decodedToken) {
 			const error = new Error("Not authenticated.");
 			error.statusCode = 401;

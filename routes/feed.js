@@ -8,17 +8,17 @@ import {
 	getPosts,
 	updatePost,
 } from "../controllers/feed.js";
-import { verifyToken } from "../util/jwt.js";
+import { isAuthenticated } from "../util/jwt.js";
 
 const router = express.Router();
 
 //GET: /feed/posts
-router.get("/posts", verifyToken, getPosts);
+router.get("/posts", isAuthenticated, getPosts);
 
 //POST: /feed/post
 router.post(
 	"/post",
-	verifyToken,
+	isAuthenticated,
 	[
 		body("title").trim().isLength({ min: 5 }),
 		body("content").trim().isLength({ min: 5 }),
@@ -27,12 +27,12 @@ router.post(
 );
 
 //GET: /feed/post/:postId
-router.get("/post/:postId", verifyToken, getPost);
+router.get("/post/:postId", isAuthenticated, getPost);
 
 //PUT: /feed/post/:postId
 router.put(
 	"/post/:postId",
-	verifyToken,
+	isAuthenticated,
 	[
 		body("title").trim().isLength({ min: 5 }),
 		body("content").trim().isLength({ min: 5 }),
@@ -41,6 +41,6 @@ router.put(
 );
 
 //Delete: /feed/post/:postId
-router.delete("/post/:postId", verifyToken, deletePost);
+router.delete("/post/:postId", isAuthenticated, deletePost);
 
 export default router;
