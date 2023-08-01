@@ -9,7 +9,7 @@ export function generateToken(payload) {
 
 // Middleware to verify the JWT token from the request headers
 export function isAuthenticated(req, res, next) {
-	const token = req.headers.authorization;
+	const token = req.get("Authorization");
 
 	if (!token || !token.startsWith("Bearer ")) {
 		const error = new Error("No valid token provided.");
